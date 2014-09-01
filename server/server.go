@@ -3,12 +3,37 @@ package server
 import (
 	restful "github.com/emicklei/go-restful"
 	"github.com/ProductHealth/gose4/healthcheck"
+	"github.com/ProductHealth/gose4/util"
+	sigar "github.com/cloudfoundry/gosigar"
 	"time"
+	"fmt"
+	"runtime"
 )
 
-func createGetServiceStatus(healthcheckservice *healthcheck.HealthcheckService) restful.RouteFunction {
-	return func(request *restful.Request, response *restful.Response) {
-		healthcheckservice.GetResults()
+func createGetServiceStatus(status Status) restful.RouteFunction {
+	// Populate static runtime status
+	serviceStartTime := time.Now()
+	numberOfCpus := runtime.NumCPU()
+	status.OsNumberProcessors = &numberOfCpus
+	status.MachineName = util.GetCurrentHostName()
+	concreteSigar := sigar.ConcreteSigar{}
+	status.OsArch = runtime.GOARCH
+	status.OsName = runtime.GOOS
+	status.OsVersion = "n/a"
+	return func(_ *restful.Request, response *restful.Response) {
+		currentTime := time.Now()
+		res := status
+		// Time related field
+		res.SetCurrentTime(&currentTime)
+		res.UpSince = timeToIso8601(serviceStartTime)
+		uptime := currentTime.Sub(serviceStartTime)
+		res.UpDuration = fmt.Sprintf("%v seconds", uptime.Seconds())
+		// Get load avg
+		loadAvg, _ := concreteSigar.GetLoadAverage()
+		loadAvgString := fmt.Sprintf("%v", loadAvg.Five)
+		res.OsLoad = &loadAvgString
+
+		response.WriteEntity(res)
 	}
 }
 
@@ -31,7 +56,8 @@ func createGetServiceHealthcheck(healthcheckservice *healthcheck.HealthcheckServ
 }
 
 func RegisterRestEndpoints(ws *restful.WebService, se4 *healthcheck.HealthcheckService) {
-	ws.Route(ws.GET("/service/status").To(createGetServiceStatus(se4)))
+	status := Status{}
+	ws.Route(ws.GET("/service/status").To(createGetServiceStatus(status)))
 	ws.Route(ws.GET("/service/healthcheck").To(createGetServiceHealthcheck(se4)))
 }
 func CreateRestServer(service *healthcheck.HealthcheckService) *restful.WebService {
@@ -41,10 +67,6 @@ func CreateRestServer(service *healthcheck.HealthcheckService) *restful.WebServi
 	webService.Filter(addPoweredByFilter)
 	RegisterRestEndpoints(webService, service)
 	return webService
-}
-
-func timeToIso8601(t time.Time) string {
-	return t.Format("2006-01-02T15:04:05Z")
 }
 
 func addPoweredByFilter(request *restful.Request, response *restful.Response, chain *restful.FilterChain) {
