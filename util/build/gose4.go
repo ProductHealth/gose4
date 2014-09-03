@@ -48,5 +48,5 @@ func getCurrentUser() string {
 }
 
 func getCompilerVersion() string {
-	return runtime.NumCPU()
+	return string(runtime.NumCPU())
 }

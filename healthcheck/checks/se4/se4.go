@@ -5,7 +5,7 @@ import (
 	"net/url"
 )
 
-func NewDownstreamSE4HttpCheck(baseUrl URL) http.HttpCheck {
+func NewDownstreamSE4HttpCheck(baseUrl url.URL) http.HttpCheck {
 	return http.HttpCheck{
 
 	}
