@@ -5,10 +5,12 @@ import (
 	"github.com/ProductHealth/gose4/util"
 	"os/exec"
 	"os/user"
-	"encoding/json"
 	"fmt"
 	"time"
 	"strings"
+	"flag"
+	"text/template"
+	"os"
 	"runtime"
 )
 
@@ -17,16 +19,17 @@ func main() {
 	now := time.Now()
 	// Extract variables
 
-	// Write bare json file
+	// Populate bare json file
 	status := server.Status{}
+	flag.StringVar(&status.ArtifactId, "artifactid", "unknown", "Artifact Id")
+	flag.StringVar(&status.BuildNumber, "buildnumber", "unknown", "Build number")
+	flag.Parse()
 	status.BuildMachine = util.GetCurrentHostName()
-
 	status.SetBuildWhen(&now)
 	status.GitSha = getCurrentGitRevision()
 	status.BuildBy = getCurrentUser()
-
-	r, _ := json.Marshal(status)
-	print(fmt.Sprintf("%v", string(r)))
+	status.CompilerVersion = runtime.Version()
+	write(status)
 }
 
 func getCurrentGitRevision() string {
@@ -47,6 +50,17 @@ func getCurrentUser() string {
 	return u.Username
 }
 
-func getCompilerVersion() string {
-	return string(runtime.NumCPU())
+func write(status server.Status) {
+	// Write to temp dir
+	filename := "gose4_initialization.go"
+	t, _ := template.New("gose4").Parse(statusTemplate)
+	f, _ := os.Create(filename)
+	defer f.Close()
+	err := t.Execute(f, status)
+	if err != nil {
+		println(err.Error())
+	} else {
+		fmt.Printf("Write %v", filename)
+	}
 }
+

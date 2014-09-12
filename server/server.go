@@ -10,19 +10,21 @@ import (
 	"runtime"
 )
 
-func createGetServiceStatus(status Status) restful.RouteFunction {
+var ServiceStatus = Status{} //Empty status, should be replaced by compile
+
+func createGetServiceStatus() restful.RouteFunction {
 	// Populate static runtime status
 	serviceStartTime := time.Now()
 	numberOfCpus := runtime.NumCPU()
-	status.OsNumberProcessors = &numberOfCpus
-	status.MachineName = util.GetCurrentHostName()
+	ServiceStatus.OsNumberProcessors = &numberOfCpus
+	ServiceStatus.MachineName = util.GetCurrentHostName()
 	concreteSigar := sigar.ConcreteSigar{}
-	status.OsArch = runtime.GOARCH
-	status.OsName = runtime.GOOS
-	status.OsVersion = "n/a"
+	ServiceStatus.OsArch = runtime.GOARCH
+	ServiceStatus.OsName = runtime.GOOS
+	ServiceStatus.OsVersion = "n/a"
 	return func(_ *restful.Request, response *restful.Response) {
 		currentTime := time.Now()
-		res := status
+		res := ServiceStatus
 		// Time related field
 		res.SetCurrentTime(&currentTime)
 		res.UpSince = timeToIso8601(serviceStartTime)
@@ -56,8 +58,7 @@ func createGetServiceHealthcheck(healthcheckservice *healthcheck.HealthcheckServ
 }
 
 func RegisterRestEndpoints(ws *restful.WebService, se4 *healthcheck.HealthcheckService) {
-	status := Status{}
-	ws.Route(ws.GET("/service/status").To(createGetServiceStatus(status)))
+	ws.Route(ws.GET("/service/status").To(createGetServiceStatus()))
 	ws.Route(ws.GET("/service/healthcheck").To(createGetServiceHealthcheck(se4)))
 }
 func CreateRestServer(service *healthcheck.HealthcheckService) *restful.WebService {
