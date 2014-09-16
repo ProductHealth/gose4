@@ -10,7 +10,7 @@ import (
 func init() {
 	server.ServiceStatus = server.Status{
 		ArtifactId: "{{.ArtifactId}}",
-		BuildNumber: "{{.ArtifactId}}",
+		BuildNumber: "{{.BuildNumber}}",
 		BuildMachine: "{{.BuildMachine}}",
 		BuildBy: "{{.BuildBy}}",
 		BuildWhen: "{{.BuildWhen}}",
