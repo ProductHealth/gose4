@@ -8,6 +8,7 @@ import (
 	"time"
 	"fmt"
 	"runtime"
+	"net/http"
 )
 
 var ServiceStatus = Status{} //Empty status, should be replaced by compile
@@ -68,6 +69,14 @@ func CreateRestServer(service *healthcheck.HealthcheckService) *restful.WebServi
 	webService.Filter(addPoweredByFilter)
 	RegisterRestEndpoints(webService, service)
 	return webService
+}
+
+func HandlerFunc(service *healthcheck.HealthcheckService) http.HandlerFunc {
+	container := restful.NewContainer()
+	container.Add(CreateRestServer(service))
+	return func(w http.ResponseWriter, r *http.Request) {
+		container.ServeHTTP(w, r)
+	}
 }
 
 func addPoweredByFilter(request *restful.Request, response *restful.Response, chain *restful.FilterChain) {
