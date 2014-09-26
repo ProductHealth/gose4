@@ -8,9 +8,13 @@ import (
 	"time"
 	"fmt"
 	"runtime"
+	"github.com/golang/glog"
+	"net/http"
 )
 
-var ServiceStatus = Status{} //Empty status, should be replaced by compile
+var ServiceStatus = Status{}
+
+//Empty status, should be replaced by compile
 
 func createGetServiceStatus() restful.RouteFunction {
 	// Populate static runtime status
@@ -68,6 +72,14 @@ func CreateRestServer(service *healthcheck.HealthcheckService) *restful.WebServi
 	webService.Filter(addPoweredByFilter)
 	RegisterRestEndpoints(webService, service)
 	return webService
+}
+
+func StartHttpServer(service *healthcheck.HealthcheckService, httpPort int) {
+	container := restful.NewContainer()
+	glog.Infof("Starting SE4 server on port %v", httpPort)
+	container.Add(CreateRestServer(service))
+	httpServer := &http.Server{Addr:fmt.Sprintf(":%v", httpPort), Handler: container}
+	go httpServer.ListenAndServe()
 }
 
 func addPoweredByFilter(request *restful.Request, response *restful.Response, chain *restful.FilterChain) {
