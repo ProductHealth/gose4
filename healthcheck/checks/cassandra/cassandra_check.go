@@ -29,5 +29,4 @@ func (hc CassandraConnectionCheck) checkConnection() (bool, error) {
 
 func (hc CassandraConnectionCheck) Configuration() healthcheck.HealthCheckConfiguration {
 	return hc.HealthCheckConfiguration
-
 }
