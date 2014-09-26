@@ -81,7 +81,7 @@ func StartHttpServer(service *healthcheck.HealthcheckService, httpPort int) {
 	httpServer := &http.Server{Addr:
 	fmt.Sprintf(":%v", httpPort), Handler: container}
 
-	go httpServer.ListenAndServe()
+	httpServer.ListenAndServe()
 }
 func HandlerFunc(service *healthcheck.HealthcheckService) http.HandlerFunc {
 	container := restful.NewContainer()
