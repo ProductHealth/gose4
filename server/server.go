@@ -78,8 +78,17 @@ func StartHttpServer(service *healthcheck.HealthcheckService, httpPort int) {
 	container := restful.NewContainer()
 	glog.Infof("Starting SE4 server on port %v", httpPort)
 	container.Add(CreateRestServer(service))
-	httpServer := &http.Server{Addr:fmt.Sprintf(":%v", httpPort), Handler: container}
+	httpServer := &http.Server{Addr:
+	fmt.Sprintf(":%v", httpPort), Handler: container}
+
 	go httpServer.ListenAndServe()
+}
+func HandlerFunc(service *healthcheck.HealthcheckService) http.HandlerFunc {
+	container := restful.NewContainer()
+	container.Add(CreateRestServer(service))
+	return func(w http.ResponseWriter, r *http.Request) {
+		container.ServeHTTP(w, r)
+	}
 }
 
 func addPoweredByFilter(request *restful.Request, response *restful.Response, chain *restful.FilterChain) {
