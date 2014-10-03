@@ -1,15 +1,15 @@
 package checks
 
 import (
-	"github.com/gocql/gocql"
+	"fmt"
 	"github.com/ProductHealth/gose4/healthcheck"
 	"github.com/ProductHealth/gose4/util"
-	"fmt"
+	"github.com/gocql/gocql"
 )
 
 type CassandraConnectionCheck struct {
-	Session                   *gocql.Session
-	HealthCheckConfiguration  healthcheck.HealthCheckConfiguration
+	Session                  *gocql.Session
+	HealthCheckConfiguration healthcheck.HealthCheckConfiguration
 }
 
 func (hc CassandraConnectionCheck) Run() healthcheck.HealthCheckResult {

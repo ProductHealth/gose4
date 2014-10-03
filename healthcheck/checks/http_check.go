@@ -19,6 +19,7 @@ type httpCheck struct {
 	expectedHeaders *map[string]string
 	expectedBody *string
 	config  healthcheck.HealthCheckConfiguration
+	requestFunc func (*http.Request) (*http.Response,error)
 }
 
 func NewHttpCheck(address, method string, statusCode int, config healthcheck.HealthCheckConfiguration) (*httpCheck, error){
@@ -27,19 +28,23 @@ func NewHttpCheck(address, method string, statusCode int, config healthcheck.Hea
 		return nil, err
 	}
 
-	return &httpCheck{url: url, method: method, statusCode: statusCode, config: config }, nil
+	requestFunc:= func (req *http.Request) (*http.Response,error){
+		return http.DefaultClient.Do(req)
+	}
+
+	return &httpCheck{url: url, method: method, statusCode: statusCode, config: config, requestFunc:  requestFunc}, nil
 }
 
 func (hc *httpCheck) RequestBody(content string) {
 	hc.requestBody = &content
 }
 
-func (hc *httpCheck) RequestHeaders(rh *map[string]string) {
-	hc.requestHeaders = rh
+func (hc *httpCheck) RequestHeaders(rh map[string]string) {
+	hc.requestHeaders = &rh
 }
 
-func (hc *httpCheck) ExpectedHeaders(eh *map[string]string) {
-	hc.expectedHeaders = eh
+func (hc *httpCheck) ExpectedHeaders(eh map[string]string) {
+	hc.expectedHeaders = &eh
 }
 
 func (hc *httpCheck) ExpectedBody(content string) {
@@ -56,10 +61,12 @@ func (hc *httpCheck) Run() healthcheck.HealthCheckResult {
 	if err != nil {
 		return healthcheck.Failed(sw.GetDuration(), err.Error())
 	}
-	client := http.DefaultClient // TODO : Make configurable
-	response, err := client.Do(request)
+	response, err := hc.requestFunc(request)
+	if err != nil {
+		return healthcheck.Failed(sw.GetDuration(), fmt.Sprintf("Error while requesting %#v: %s", hc.url, err))
+	}
 	if hc.statusCode != response.StatusCode {
-		return healthcheck.Failed(sw.GetDuration(), fmt.Sprintf("Returned response code %v does not match required %v ", response.StatusCode, hc.statusCode))
+		return healthcheck.Failed(sw.GetDuration(), fmt.Sprintf("Returned response code %#v does not match required %#v ", response.StatusCode, hc.statusCode))
 	}
 	return healthcheck.Ok(sw.GetDuration())
 }

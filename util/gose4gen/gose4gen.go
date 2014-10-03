@@ -1,17 +1,17 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"github.com/ProductHealth/gose4/server"
 	"github.com/ProductHealth/gose4/util"
+	"os"
 	"os/exec"
 	"os/user"
-	"fmt"
-	"time"
-	"strings"
-	"flag"
-	"text/template"
-	"os"
 	"runtime"
+	"strings"
+	"text/template"
+	"time"
 )
 
 // Generate a minimum status json file, populating all build related fields
@@ -63,4 +63,3 @@ func write(status server.Status) {
 		fmt.Printf("Write %v", filename)
 	}
 }
-

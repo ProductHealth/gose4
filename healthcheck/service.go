@@ -1,17 +1,17 @@
 package healthcheck
 
 import (
-	"time"
 	"github.com/golang/glog"
+	"time"
 )
 
 type HealthcheckService struct {
 	healthchecks []HealthCheck
-	results map[HealthCheck]HealthCheckResult
+	results      map[HealthCheck]HealthCheckResult
 }
 
 func CreateHealthcheckService() *HealthcheckService {
-	return &HealthcheckService{[]HealthCheck{}, make(map[HealthCheck]HealthCheckResult) }
+	return &HealthcheckService{[]HealthCheck{}, make(map[HealthCheck]HealthCheckResult)}
 }
 
 func (se4server HealthcheckService) GetResults() map[HealthCheck]HealthCheckResult {
@@ -36,5 +36,3 @@ func (se4server HealthcheckService) runHealthcheck(h HealthCheck) {
 		time.Sleep(h.Configuration().RunDelay)
 	}
 }
-
-

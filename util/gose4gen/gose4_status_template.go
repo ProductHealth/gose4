@@ -1,6 +1,5 @@
 package main
 
-
 const statusTemplate = `package main
 
 import (
@@ -19,4 +18,3 @@ func init() {
 	}
 }
 `
-
