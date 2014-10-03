@@ -26,6 +26,14 @@ type HealthCheckConfiguration struct {
 	Description  string
 }
 
+func NewDefaultConfiguration(description string, severity Severity) HealthCheckConfiguration {
+	return HealthCheckConfiguration{
+		Severity: SeverityWarn,
+		InitialDelay: time.Second * 0,
+		RunDelay: time.Minute * 5,
+		Description: description}
+}
+
 type HealthCheckResult struct {
 	Duration    time.Duration
 	Status      Status
