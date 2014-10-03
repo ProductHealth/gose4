@@ -1,23 +1,23 @@
 package http
 
 import (
-	"net/url"
+	"fmt"
 	"github.com/ProductHealth/gose4/healthcheck"
 	"github.com/ProductHealth/gose4/util"
-	"net/http"
-	"strings"
-	"fmt"
 	"io"
+	"net/http"
+	"net/url"
+	"strings"
 )
 
 type HttpCheck struct {
-	Uri                       url.URL
-	Method                    string
-	RequestBody *string
-	ExpectedHttpResponse *int
-	ExpectedHeader *map[string]string
-	ExpectedBodyContent *string
-	HealthCheckConfiguration  healthcheck.HealthCheckConfiguration
+	Uri                      url.URL
+	Method                   string
+	RequestBody              *string
+	ExpectedHttpResponse     *int
+	ExpectedHeader           *map[string]string
+	ExpectedBodyContent      *string
+	HealthCheckConfiguration healthcheck.HealthCheckConfiguration
 }
 
 func (httpCheck HttpCheck) Run() healthcheck.HealthCheckResult {
@@ -41,4 +41,3 @@ func (httpCheck HttpCheck) Run() healthcheck.HealthCheckResult {
 func (hc HttpCheck) Configuration() healthcheck.HealthCheckConfiguration {
 	return hc.HealthCheckConfiguration
 }
-

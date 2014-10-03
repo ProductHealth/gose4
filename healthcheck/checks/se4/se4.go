@@ -6,7 +6,5 @@ import (
 )
 
 func NewDownstreamSE4HttpCheck(baseUrl url.URL) http.HttpCheck {
-	return http.HttpCheck{
-
-	}
+	return http.HttpCheck{}
 }

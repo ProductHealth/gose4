@@ -1,15 +1,15 @@
 package server
 
 import (
-	restful "github.com/emicklei/go-restful"
+	"fmt"
 	"github.com/ProductHealth/gose4/healthcheck"
 	"github.com/ProductHealth/gose4/util"
 	sigar "github.com/cloudfoundry/gosigar"
-	"time"
-	"fmt"
-	"runtime"
+	restful "github.com/emicklei/go-restful"
 	"github.com/golang/glog"
 	"net/http"
+	"runtime"
+	"time"
 )
 
 var ServiceStatus = Status{}
@@ -78,8 +78,7 @@ func StartHttpServer(service *healthcheck.HealthcheckService, httpPort int) {
 	container := restful.NewContainer()
 	glog.Infof("Starting SE4 server on port %v", httpPort)
 	container.Add(CreateRestServer(service))
-	httpServer := &http.Server{Addr:
-	fmt.Sprintf(":%v", httpPort), Handler: container}
+	httpServer := &http.Server{Addr: fmt.Sprintf(":%v", httpPort), Handler: container}
 
 	httpServer.ListenAndServe()
 }

@@ -1,20 +1,20 @@
 package healthcheck
 
 import (
-	"time"
 	"fmt"
+	"time"
 )
 
 type Severity int
 type Status int
 
 const (
-	SeverityNotice  Severity = iota + 1
+	SeverityNotice Severity = iota + 1
 	SeverityWarn
 	SeverityFatal
 )
 const (
-	StatusPassed  Status = iota + 1
+	StatusPassed Status = iota + 1
 	StatusFailed
 	StatusRunning
 )
@@ -27,10 +27,10 @@ type HealthCheckConfiguration struct {
 }
 
 type HealthCheckResult struct {
-	Duration    time.Duration
-	Status      Status
-	Message     string
-	LastCheck   time.Time
+	Duration  time.Duration
+	Status    Status
+	Message   string
+	LastCheck time.Time
 }
 
 func (r HealthCheckResult) DurationMillis() int64 {
@@ -43,10 +43,14 @@ func (r HealthCheckResult) String() string {
 
 func (r Status) String() string {
 	switch r {
-	case StatusPassed: return "passed"
-	case StatusFailed: return "failed"
-	case StatusRunning: return "running"
-	default: return "unknown"
+	case StatusPassed:
+		return "passed"
+	case StatusFailed:
+		return "failed"
+	case StatusRunning:
+		return "running"
+	default:
+		return "unknown"
 	}
 }
 
@@ -66,5 +70,3 @@ func Passed(d time.Duration, m string) HealthCheckResult {
 func Failed(d time.Duration, m string) HealthCheckResult {
 	return HealthCheckResult{d, StatusFailed, m, time.Now().UTC()}
 }
-
-
