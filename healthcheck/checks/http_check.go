@@ -62,6 +62,7 @@ func (hc *httpCheck) Run() healthcheck.HealthCheckResult {
 		return healthcheck.Failed(sw.GetDuration(), err.Error())
 	}
 	response, err := hc.requestFunc(request)
+	fmt.Printf("RESPONSE %#v ERR: %s", response, err)
 	if err != nil {
 		return healthcheck.Failed(sw.GetDuration(), fmt.Sprintf("Error while requesting %#v: %s", hc.url, err))
 	}

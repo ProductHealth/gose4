@@ -26,11 +26,12 @@ type HealthCheckConfiguration struct {
 	Description  string
 }
 
-func NewDefaultConfiguration(description string, severity Severity) HealthCheckConfiguration {
+//initialDelay and period are integer representin seconds
+func NewConfiguration(description string, severity Severity, initialDelay, period int) HealthCheckConfiguration {
 	return HealthCheckConfiguration{
 		Severity: SeverityWarn,
-		InitialDelay: time.Second * 0,
-		RunDelay: time.Minute * 5,
+		InitialDelay: time.Second * time.Duration(initialDelay),
+		RunDelay: time.Second * time.Duration(period),
 		Description: description}
 }
 

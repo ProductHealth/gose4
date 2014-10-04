@@ -10,5 +10,5 @@ func NewDownstreamSE4HttpCheck(address string) (healthcheck.HealthCheck,error) {
 		address,
 		"GET",
 		200,
-		healthcheck.NewDefaultConfiguration(fmt.Sprintf("Downstream check at %v failed", address), healthcheck.SeverityWarn))
+		healthcheck.NewConfiguration(fmt.Sprintf("Downstream check at %v failed", address), healthcheck.SeverityWarn, 0, 300))
 }
