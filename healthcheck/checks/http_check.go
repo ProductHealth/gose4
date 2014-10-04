@@ -1,38 +1,39 @@
 package checks
 
 import (
-	"net/url"
+	"fmt"
 	"github.com/ProductHealth/gose4/healthcheck"
 	"github.com/ProductHealth/gose4/util"
-	"net/http"
-	"strings"
-	"fmt"
+	"github.com/golang/glog"
 	"io"
+	"net/http"
+	"net/url"
+	"strings"
 )
 
 type httpCheck struct {
-	url                       *url.URL
-	method                    string
-	statusCode int
-	requestBody *string
-	requestHeaders *map[string]string
+	url             *url.URL
+	method          string
+	statusCode      int
+	requestBody     *string
+	requestHeaders  *map[string]string
 	expectedHeaders *map[string]string
-	expectedBody *string
-	config  healthcheck.HealthCheckConfiguration
-	requestFunc func (*http.Request) (*http.Response,error)
+	expectedBody    *string
+	config          healthcheck.HealthCheckConfiguration
+	requestFunc     func(*http.Request) (*http.Response, error)
 }
 
-func NewHttpCheck(address, method string, statusCode int, config healthcheck.HealthCheckConfiguration) (*httpCheck, error){
-	url, err:=url.Parse(address)
-	if err!= nil {
+func NewHttpCheck(address, method string, statusCode int, config healthcheck.HealthCheckConfiguration) (*httpCheck, error) {
+	url, err := url.Parse(address)
+	if err != nil {
 		return nil, err
 	}
 
-	requestFunc:= func (req *http.Request) (*http.Response,error){
+	requestFunc := func(req *http.Request) (*http.Response, error) {
 		return http.DefaultClient.Do(req)
 	}
 
-	return &httpCheck{url: url, method: method, statusCode: statusCode, config: config, requestFunc:  requestFunc}, nil
+	return &httpCheck{url: url, method: method, statusCode: statusCode, config: config, requestFunc: requestFunc}, nil
 }
 
 func (hc *httpCheck) RequestBody(content string) {
@@ -62,7 +63,7 @@ func (hc *httpCheck) Run() healthcheck.HealthCheckResult {
 		return healthcheck.Failed(sw.GetDuration(), err.Error())
 	}
 	response, err := hc.requestFunc(request)
-	fmt.Printf("RESPONSE %#v ERR: %s", response, err)
+	glog.V(5).Infof("RESPONSE %#v ERR: %s", response, err)
 	if err != nil {
 		return healthcheck.Failed(sw.GetDuration(), fmt.Sprintf("Error while requesting %#v: %s", hc.url, err))
 	}
@@ -75,4 +76,3 @@ func (hc *httpCheck) Run() healthcheck.HealthCheckResult {
 func (hc *httpCheck) Configuration() healthcheck.HealthCheckConfiguration {
 	return hc.config
 }
-

@@ -1,11 +1,11 @@
 package checks
 
 import (
+	"fmt"
 	"github.com/ProductHealth/gose4/healthcheck"
-	"testing"
 	"net/http"
 	"net/url"
-	"fmt"
+	"testing"
 )
 
 func TestRun(t *testing.T) {
@@ -14,7 +14,7 @@ func TestRun(t *testing.T) {
 	}
 	url, _ := url.Parse("http://foo.bar")
 
-	check := httpCheck{url:url, method: "GET", statusCode: 200, requestFunc: requestFunc}
+	check := httpCheck{url: url, method: "GET", statusCode: 200, requestFunc: requestFunc}
 
 	result := check.Run()
 
@@ -29,7 +29,7 @@ func TestRunError(t *testing.T) {
 	}
 	url, _ := url.Parse("http://foo.bar")
 
-	check := httpCheck{url:url, method: "GET", statusCode: 200, requestFunc: requestFunc}
+	check := httpCheck{url: url, method: "GET", statusCode: 200, requestFunc: requestFunc}
 
 	result := check.Run()
 
@@ -37,5 +37,3 @@ func TestRunError(t *testing.T) {
 		t.Errorf("Expected passed but got: %#v", result)
 	}
 }
-
-

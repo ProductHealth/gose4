@@ -1,11 +1,11 @@
 package checks
 
 import (
-	"github.com/ProductHealth/gose4/healthcheck"
 	"fmt"
+	"github.com/ProductHealth/gose4/healthcheck"
 )
 
-func NewDownstreamSE4HttpCheck(address string) (healthcheck.HealthCheck,error) {
+func NewDownstreamSE4HttpCheck(address string) (healthcheck.HealthCheck, error) {
 	return NewHttpCheck(
 		address,
 		"GET",
