@@ -1,9 +1,7 @@
-package server
+package gose4
 
 import (
 	"fmt"
-	"github.com/ProductHealth/gose4/healthcheck"
-	"github.com/ProductHealth/gose4/util"
 	sigar "github.com/cloudfoundry/gosigar"
 	restful "github.com/emicklei/go-restful"
 	"github.com/golang/glog"
@@ -12,16 +10,41 @@ import (
 	"time"
 )
 
-var ServiceStatus = Status{}
+type TestResults struct {
+	ReportAsOf     string            `json:"report_as_of"`    //ISO 8601 Representation
+	ReportDuration string            `json:"report_duration"` //
+	Tests          []TestResult `json:"tests"`
+}
+type TestResult struct {
+	DurationMillis int64  `json:"duration_millis"`
+	TestName       string `json:"test_name"`
+	TestResult     string `json:"rest_result"`
+	TestedAt       string `json:"tested_at"` //ISO 8601 Representation
+}
 
-//Empty status, should be replaced by compile
+func StartHttpServer(service *healthCheckService, httpPort int) {
+	container := restful.NewContainer()
+	glog.Infof("Starting SE4 server on port %v", httpPort)
+	container.Add(createRestServer(service))
+	httpServer := &http.Server{Addr: fmt.Sprintf(":%v", httpPort), Handler: container}
+
+	httpServer.ListenAndServe()
+}
+
+func HandlerFunc(service *healthCheckService) http.HandlerFunc {
+	container := restful.NewContainer()
+	container.Add(createRestServer(service))
+	return func(w http.ResponseWriter, r *http.Request) {
+		container.ServeHTTP(w, r)
+	}
+}
 
 func createGetServiceStatus() restful.RouteFunction {
 	// Populate static runtime status
 	serviceStartTime := time.Now()
 	numberOfCpus := runtime.NumCPU()
 	ServiceStatus.OsNumberProcessors = &numberOfCpus
-	ServiceStatus.MachineName = util.GetCurrentHostName()
+	ServiceStatus.MachineName = GetCurrentHostName()
 	concreteSigar := sigar.ConcreteSigar{}
 	ServiceStatus.OsArch = runtime.GOARCH
 	ServiceStatus.OsName = runtime.GOOS
@@ -43,17 +66,16 @@ func createGetServiceStatus() restful.RouteFunction {
 	}
 }
 
-func createGetServiceHealthcheck(healthcheckservice *healthcheck.HealthcheckService) restful.RouteFunction {
+func createGetServiceHealthCheck(healthcheckservice *healthCheckService) restful.RouteFunction {
 	return func(request *restful.Request, response *restful.Response) {
-		result := HealthCheck{}
+		result := TestResults{}
 		result.ReportAsOf = timeToIso8601(time.Now().UTC())
-		result.Tests = []HealthCheckTest{}
-		//result.Tests = []healthcheck.HealthCheckResult{}
+		result.Tests = []TestResult{}
 		for check, lastResult := range healthcheckservice.GetResults() {
-			resultItem := HealthCheckTest{}
+			resultItem := TestResult{}
 			resultItem.DurationMillis = lastResult.DurationMillis()
 			resultItem.TestName = check.Configuration().Description
-			resultItem.TestResult = lastResult.Status.String()
+			resultItem.TestResult = lastResult.Result.String()
 			resultItem.TestedAt = timeToIso8601(lastResult.LastCheck)
 			result.Tests = append(result.Tests, resultItem)
 		}
@@ -61,36 +83,24 @@ func createGetServiceHealthcheck(healthcheckservice *healthcheck.HealthcheckServ
 	}
 }
 
-func RegisterRestEndpoints(ws *restful.WebService, se4 *healthcheck.HealthcheckService) {
+func registerRestEndpoints(ws *restful.WebService, se4 *healthCheckService) {
 	ws.Route(ws.GET("/service/status").To(createGetServiceStatus()))
-	ws.Route(ws.GET("/service/healthcheck").To(createGetServiceHealthcheck(se4)))
+	ws.Route(ws.GET("/service/healthcheck").To(createGetServiceHealthCheck(se4)))
 }
-func CreateRestServer(service *healthcheck.HealthcheckService) *restful.WebService {
+func createRestServer(service *healthCheckService) *restful.WebService {
 	webService := new(restful.WebService)
 	webService.Consumes(restful.MIME_JSON)
 	webService.Produces(restful.MIME_JSON)
 	webService.Filter(addPoweredByFilter)
-	RegisterRestEndpoints(webService, service)
+	registerRestEndpoints(webService, service)
 	return webService
-}
-
-func StartHttpServer(service *healthcheck.HealthcheckService, httpPort int) {
-	container := restful.NewContainer()
-	glog.Infof("Starting SE4 server on port %v", httpPort)
-	container.Add(CreateRestServer(service))
-	httpServer := &http.Server{Addr: fmt.Sprintf(":%v", httpPort), Handler: container}
-
-	httpServer.ListenAndServe()
-}
-func HandlerFunc(service *healthcheck.HealthcheckService) http.HandlerFunc {
-	container := restful.NewContainer()
-	container.Add(CreateRestServer(service))
-	return func(w http.ResponseWriter, r *http.Request) {
-		container.ServeHTTP(w, r)
-	}
 }
 
 func addPoweredByFilter(request *restful.Request, response *restful.Response, chain *restful.FilterChain) {
 	response.AddHeader("X-Generated-By", "goSE4")
 	chain.ProcessFilter(request, response)
+}
+
+func timeToIso8601(t time.Time) string {
+	return t.Format("2006-01-02T15:04:05Z")
 }

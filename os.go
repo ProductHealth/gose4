@@ -1,4 +1,4 @@
-package util
+package gose4
 
 import (
 	"fmt"

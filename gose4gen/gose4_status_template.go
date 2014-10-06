@@ -3,11 +3,11 @@ package main
 const statusTemplate = `package main
 
 import (
-	"github.com/ProductHealth/gose4/server"
+	"github.com/ProductHealth/gose4"
 )
 
 func init() {
-	server.ServiceStatus = server.Status{
+	gose4.ServiceStatus = gose4.Status{
 		ArtifactId: "{{.ArtifactId}}",
 		BuildNumber: "{{.BuildNumber}}",
 		BuildMachine: "{{.BuildMachine}}",

@@ -3,8 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/ProductHealth/gose4/server"
-	"github.com/ProductHealth/gose4/util"
+	"github.com/ProductHealth/gose4"
 	"os"
 	"os/exec"
 	"os/user"
@@ -20,11 +19,11 @@ func main() {
 	// Extract variables
 
 	// Populate bare json file
-	status := server.Status{}
+	status := gose4.Status{}
 	flag.StringVar(&status.ArtifactId, "artifactid", "unknown", "Artifact Id")
 	flag.StringVar(&status.BuildNumber, "buildnumber", "unknown", "Build number")
 	flag.Parse()
-	status.BuildMachine = util.GetCurrentHostName()
+	status.BuildMachine = gose4.GetCurrentHostName()
 	status.SetBuildWhen(&now)
 	status.GitSha = getCurrentGitRevision()
 	status.BuildBy = getCurrentUser()
@@ -50,7 +49,7 @@ func getCurrentUser() string {
 	return u.Username
 }
 
-func write(status server.Status) {
+func write(status gose4.Status) {
 	// Write to temp dir
 	filename := "gose4_initialization.go"
 	t, _ := template.New("gose4").Parse(statusTemplate)

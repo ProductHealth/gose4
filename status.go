@@ -1,8 +1,11 @@
-package server
+package gose4
 
 import (
 	"time"
 )
+
+//Empty status, should be replaced by compile
+var ServiceStatus = Status{}
 
 type Status struct {
 	ArtifactId         string  `json:"artifact_id"`
@@ -30,16 +33,4 @@ func (s *Status) SetBuildWhen(t *time.Time) {
 }
 func (s *Status) SetCurrentTime(t *time.Time) {
 	s.CurrentTime = timeToIso8601(t.UTC())
-}
-
-type HealthCheck struct {
-	ReportAsOf     string            `json:"report_as_of"`    //ISO 8601 Representation
-	ReportDuration string            `json:"report_duration"` //
-	Tests          []HealthCheckTest `json:"tests"`
-}
-type HealthCheckTest struct {
-	DurationMillis int64  `json:"duration_millis"`
-	TestName       string `json:"test_name"`
-	TestResult     string `json:"rest_result"`
-	TestedAt       string `json:"tested_at"` //ISO 8601 Representation
 }
