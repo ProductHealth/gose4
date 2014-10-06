@@ -1,8 +1,8 @@
-package checks
+package http
 
 import (
 	"fmt"
-	"github.com/ProductHealth/gose4/healthcheck"
+	"github.com/ProductHealth/gose4"
 	"net/http"
 	"net/url"
 	"testing"
@@ -14,11 +14,11 @@ func TestRun(t *testing.T) {
 	}
 	url, _ := url.Parse("http://foo.bar")
 
-	check := httpCheck{url: url, method: "GET", statusCode: 200, requestFunc: requestFunc}
+	check := check{url: url, method: "GET", statusCode: 200, requestFunc: requestFunc}
 
 	result := check.Run()
 
-	if result.Status != healthcheck.StatusPassed {
+	if result.Result != gose4.CheckPassed {
 		t.Errorf("Expected passed but got: %#v", result)
 	}
 }
@@ -29,11 +29,11 @@ func TestRunError(t *testing.T) {
 	}
 	url, _ := url.Parse("http://foo.bar")
 
-	check := httpCheck{url: url, method: "GET", statusCode: 200, requestFunc: requestFunc}
+	check := check{url: url, method: "GET", statusCode: 200, requestFunc: requestFunc}
 
 	result := check.Run()
 
-	if result.Status != healthcheck.StatusFailed {
+	if result.Result != gose4.CheckFailed {
 		t.Errorf("Expected passed but got: %#v", result)
 	}
 }

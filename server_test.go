@@ -1,14 +1,13 @@
-package server
+package gose4
 
 import (
-	"github.com/ProductHealth/gose4/healthcheck"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
 func TestHandlerFunc(t *testing.T) {
-	healthCheckService := healthcheck.CreateHealthcheckService()
+	healthCheckService := CreateHealthcheckService()
 	handler := HandlerFunc(healthCheckService)
 
 	req, err := http.NewRequest("GET", "http://example.com/service/status", nil)

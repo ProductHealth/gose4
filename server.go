@@ -1,9 +1,7 @@
-package server
+package gose4
 
 import (
 	"fmt"
-	"github.com/ProductHealth/gose4/healthcheck"
-	"github.com/ProductHealth/gose4/util"
 	sigar "github.com/cloudfoundry/gosigar"
 	restful "github.com/emicklei/go-restful"
 	"github.com/golang/glog"
@@ -11,6 +9,46 @@ import (
 	"runtime"
 	"time"
 )
+
+type Status struct {
+	ArtifactId         string  `json:"artifact_id"`
+	BuildNumber        string  `json:"build_number"`
+	BuildMachine       string  `json:"build_machine"`
+	BuildBy            string  `json:"build_by"`
+	BuildWhen          string  `json:"build_when"` //ISO 8601 Representation
+	CompilerVersion    string  `json:"compiler_version"`
+	CurrentTime        string  `json:"current_time"` //ISO 8601 Representation
+	GitSha             string  `json:"git_sha"`
+	MachineName        string  `json:"machine_name"`
+	OsArch             string  `json:"os_arch"`
+	OsName             string  `json:"os_name"`
+	OsVersion          string  `json:"os_version"`
+	RunbookUri         string  `json:"runbook_uri"`
+	UpDuration         string  `json:"up_duration"`
+	UpSince            string  `json:"up_since"` //ISO 8601 Representation
+	Version            string  `json:"version"`
+	OsLoad             *string `json:"os_avgload,omitempty"`
+	OsNumberProcessors *int    `json:"os_numprocessors,omitempty"`
+}
+
+func (s *Status) SetBuildWhen(t *time.Time) {
+	s.BuildWhen = timeToIso8601(t.UTC())
+}
+func (s *Status) SetCurrentTime(t *time.Time) {
+	s.CurrentTime = timeToIso8601(t.UTC())
+}
+
+type TestResults struct {
+	ReportAsOf     string            `json:"report_as_of"`    //ISO 8601 Representation
+	ReportDuration string            `json:"report_duration"` //
+	Tests          []TestResult `json:"tests"`
+}
+type TestResult struct {
+	DurationMillis int64  `json:"duration_millis"`
+	TestName       string `json:"test_name"`
+	TestResult     string `json:"rest_result"`
+	TestedAt       string `json:"tested_at"` //ISO 8601 Representation
+}
 
 var ServiceStatus = Status{}
 
@@ -21,7 +59,7 @@ func createGetServiceStatus() restful.RouteFunction {
 	serviceStartTime := time.Now()
 	numberOfCpus := runtime.NumCPU()
 	ServiceStatus.OsNumberProcessors = &numberOfCpus
-	ServiceStatus.MachineName = util.GetCurrentHostName()
+	ServiceStatus.MachineName = GetCurrentHostName()
 	concreteSigar := sigar.ConcreteSigar{}
 	ServiceStatus.OsArch = runtime.GOARCH
 	ServiceStatus.OsName = runtime.GOOS
@@ -43,17 +81,16 @@ func createGetServiceStatus() restful.RouteFunction {
 	}
 }
 
-func createGetServiceHealthcheck(healthcheckservice *healthcheck.HealthcheckService) restful.RouteFunction {
+func createGetServiceHealthcheck(healthcheckservice *HealthcheckService) restful.RouteFunction {
 	return func(request *restful.Request, response *restful.Response) {
-		result := HealthCheck{}
+		result := TestResults{}
 		result.ReportAsOf = timeToIso8601(time.Now().UTC())
-		result.Tests = []HealthCheckTest{}
-		//result.Tests = []healthcheck.HealthCheckResult{}
+		result.Tests = []TestResult{}
 		for check, lastResult := range healthcheckservice.GetResults() {
-			resultItem := HealthCheckTest{}
+			resultItem := TestResult{}
 			resultItem.DurationMillis = lastResult.DurationMillis()
 			resultItem.TestName = check.Configuration().Description
-			resultItem.TestResult = lastResult.Status.String()
+			resultItem.TestResult = lastResult.Result.String()
 			resultItem.TestedAt = timeToIso8601(lastResult.LastCheck)
 			result.Tests = append(result.Tests, resultItem)
 		}
@@ -61,11 +98,11 @@ func createGetServiceHealthcheck(healthcheckservice *healthcheck.HealthcheckServ
 	}
 }
 
-func RegisterRestEndpoints(ws *restful.WebService, se4 *healthcheck.HealthcheckService) {
+func RegisterRestEndpoints(ws *restful.WebService, se4 *HealthcheckService) {
 	ws.Route(ws.GET("/service/status").To(createGetServiceStatus()))
 	ws.Route(ws.GET("/service/healthcheck").To(createGetServiceHealthcheck(se4)))
 }
-func CreateRestServer(service *healthcheck.HealthcheckService) *restful.WebService {
+func CreateRestServer(service *HealthcheckService) *restful.WebService {
 	webService := new(restful.WebService)
 	webService.Consumes(restful.MIME_JSON)
 	webService.Produces(restful.MIME_JSON)
@@ -74,7 +111,7 @@ func CreateRestServer(service *healthcheck.HealthcheckService) *restful.WebServi
 	return webService
 }
 
-func StartHttpServer(service *healthcheck.HealthcheckService, httpPort int) {
+func StartHttpServer(service *HealthcheckService, httpPort int) {
 	container := restful.NewContainer()
 	glog.Infof("Starting SE4 server on port %v", httpPort)
 	container.Add(CreateRestServer(service))
@@ -82,7 +119,7 @@ func StartHttpServer(service *healthcheck.HealthcheckService, httpPort int) {
 
 	httpServer.ListenAndServe()
 }
-func HandlerFunc(service *healthcheck.HealthcheckService) http.HandlerFunc {
+func HandlerFunc(service *HealthcheckService) http.HandlerFunc {
 	container := restful.NewContainer()
 	container.Add(CreateRestServer(service))
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -93,4 +130,8 @@ func HandlerFunc(service *healthcheck.HealthcheckService) http.HandlerFunc {
 func addPoweredByFilter(request *restful.Request, response *restful.Response, chain *restful.FilterChain) {
 	response.AddHeader("X-Generated-By", "goSE4")
 	chain.ProcessFilter(request, response)
+}
+
+func timeToIso8601(t time.Time) string {
+	return t.Format("2006-01-02T15:04:05Z")
 }
