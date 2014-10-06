@@ -7,7 +7,7 @@ import (
 )
 
 func TestHandlerFunc(t *testing.T) {
-	healthCheckService := CreateHealthcheckService()
+	healthCheckService := New()
 	handler := HandlerFunc(healthCheckService)
 
 	req, err := http.NewRequest("GET", "http://example.com/service/status", nil)

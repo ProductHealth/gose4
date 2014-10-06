@@ -11,7 +11,7 @@ type check struct {
 	config gose4.Configuration
 }
 
-func NewCheck(session *gocql.Session, config gose4.Configuration) *check{
+func New(session *gocql.Session, config gose4.Configuration) *check{
 	return &check{session: session, config: config}
 }
 

@@ -6,8 +6,8 @@ import (
 	"github.com/ProductHealth/gose4/http"
 )
 
-func NewCheck(address string) (gose4.HealthCheck, error) {
-	return http.NewCheck(
+func New(address string) (gose4.HealthCheck, error) {
+	return http.New(
 		address,
 		"GET",
 		200,

@@ -22,7 +22,7 @@ type check struct {
 	requestFunc     func(*http.Request) (*http.Response, error)
 }
 
-func NewCheck(address, method string, statusCode int, config gose4.Configuration) (*check, error) {
+func New(address, method string, statusCode int, config gose4.Configuration) (*check, error) {
 	url, err := url.Parse(address)
 	if err != nil {
 		return nil, err
