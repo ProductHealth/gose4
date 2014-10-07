@@ -22,7 +22,7 @@ type TestResult struct {
 	TestedAt       string `json:"tested_at"` //ISO 8601 Representation
 }
 
-func StartHttpServer(service *healthCheckService, httpPort int) {
+func StartHttpServer(service HealthCheckService, httpPort int) {
 	container := restful.NewContainer()
 	glog.Infof("Starting SE4 server on port %v", httpPort)
 	container.Add(createRestServer(service))
@@ -66,7 +66,7 @@ func createGetServiceStatus() restful.RouteFunction {
 	}
 }
 
-func createGetServiceHealthCheck(healthcheckservice *healthCheckService) restful.RouteFunction {
+func createGetServiceHealthCheck(healthcheckservice HealthCheckService) restful.RouteFunction {
 	return func(request *restful.Request, response *restful.Response) {
 		result := TestResults{}
 		result.ReportAsOf = timeToIso8601(time.Now().UTC())
@@ -83,11 +83,11 @@ func createGetServiceHealthCheck(healthcheckservice *healthCheckService) restful
 	}
 }
 
-func registerRestEndpoints(ws *restful.WebService, se4 *healthCheckService) {
+func registerRestEndpoints(ws *restful.WebService, se4 HealthCheckService) {
 	ws.Route(ws.GET("/service/status").To(createGetServiceStatus()))
 	ws.Route(ws.GET("/service/healthcheck").To(createGetServiceHealthCheck(se4)))
 }
-func createRestServer(service *healthCheckService) *restful.WebService {
+func createRestServer(service HealthCheckService) *restful.WebService {
 	webService := new(restful.WebService)
 	webService.Consumes(restful.MIME_JSON)
 	webService.Produces(restful.MIME_JSON)
