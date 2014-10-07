@@ -82,6 +82,10 @@ func Failed(d time.Duration, m string) HealthCheckResult {
 	return HealthCheckResult{d, CheckFailed, m, time.Now().UTC()}
 }
 
+type HealthCheckService interface {
+	GetResults() map[HealthCheck]HealthCheckResult
+	Register(h HealthCheck)
+}
 
 type healthCheckService struct {
 	healthchecks []HealthCheck
