@@ -27,7 +27,6 @@ func StartHttpServer(service HealthCheckService, httpPort int) {
 	glog.Infof("Starting SE4 server on port %v", httpPort)
 	container.Add(createRestServer(service))
 	httpServer := &http.Server{Addr: fmt.Sprintf(":%v", httpPort), Handler: container}
-
 	httpServer.ListenAndServe()
 }
 
