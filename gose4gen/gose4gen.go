@@ -11,6 +11,7 @@ import (
 	"strings"
 	"text/template"
 	"time"
+	"encoding/json"
 )
 
 // Generate a minimum status json file, populating all build related fields
@@ -22,13 +23,18 @@ func main() {
 	status := gose4.Status{}
 	flag.StringVar(&status.ArtifactId, "artifactid", "unknown", "Artifact Id")
 	flag.StringVar(&status.BuildNumber, "buildnumber", "unknown", "Build number")
+	outputJson := flag.Bool("json", false, "Write JSON output") // JSON output allows the creation of a valid /service/status file
 	flag.Parse()
 	status.BuildMachine = gose4.GetCurrentHostName()
 	status.SetBuildWhen(&now)
 	status.GitSha = getCurrentGitRevision()
 	status.BuildBy = getCurrentUser()
 	status.CompilerVersion = runtime.Version()
-	write(status)
+	if *outputJson {
+		write_json(status)
+	} else {
+		write_go(status)
+	}
 }
 
 func getCurrentGitRevision() string {
@@ -48,8 +54,26 @@ func getCurrentUser() string {
 	}
 	return u.Username
 }
+func write_json(status gose4.Status) {
+	filename := "status.json"
+	bytes, err := json.MarshalIndent(status, " ", " ")
+	if err != nil {
+		fmt.Sprintf("Could not marshal json : %v", err.Error())
+	}
+	f, err := os.Create(filename)
+	if err != nil {
+		fmt.Sprintf("Could not create output file %v : %v", filename, err.Error())
+	} else {
+		defer f.Close()
+	}
+	fmt.Printf("Writing %v\n", filename)
+	_, err = f.Write(bytes)
+	if err != nil {
+		fmt.Sprintf("Could not write to file : %v", err.Error())
+	}
+}
 
-func write(status gose4.Status) {
+func write_go(status gose4.Status) {
 	// Write to temp dir
 	filename := "gose4_initialization.go"
 	t, _ := template.New("gose4").Parse(statusTemplate)
@@ -59,6 +83,6 @@ func write(status gose4.Status) {
 	if err != nil {
 		println(err.Error())
 	} else {
-		fmt.Printf("Write %v", filename)
+		fmt.Printf("Writing %v\n", filename)
 	}
 }
