@@ -26,3 +26,5 @@ _testmain.go
 *.iml
 target
 *.out
+
+gose4checkversion/gose4checkversion
