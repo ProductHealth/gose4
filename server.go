@@ -10,9 +10,13 @@ import (
 	"time"
 )
 
+const (
+	SE4TimeFormat = "2006-01-02T15:04:05Z"
+)
+
 type TestResults struct {
-	ReportAsOf     string            `json:"report_as_of"`    //ISO 8601 Representation
-	ReportDuration string            `json:"report_duration"` //
+	ReportAsOf     string       `json:"report_as_of"`    //ISO 8601 Representation
+	ReportDuration string       `json:"report_duration"` //
 	Tests          []TestResult `json:"tests"`
 }
 type TestResult struct {
@@ -101,5 +105,5 @@ func addPoweredByFilter(request *restful.Request, response *restful.Response, ch
 }
 
 func timeToIso8601(t time.Time) string {
-	return t.Format("2006-01-02T15:04:05Z")
+	return t.Format(SE4TimeFormat)
 }

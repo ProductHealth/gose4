@@ -45,8 +45,6 @@ func main() {
 		log.Fatalf("Could not parse url %v", *endpoint)
 	}
 
-
-
 }
 
 func checkVersion(u *url.URL, expectedVersion *string) {

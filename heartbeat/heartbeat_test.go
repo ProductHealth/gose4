@@ -3,8 +3,8 @@ package heartbeat
 import (
 	"github.com/ProductHealth/gose4"
 	"github.com/stretchr/testify/assert"
-	"time"
 	"testing"
+	"time"
 )
 
 var (

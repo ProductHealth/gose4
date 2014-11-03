@@ -12,9 +12,9 @@ const (
 
 //Heartbeat check, has to triggered within a duration in order to pass
 type Check struct {
-	maxDuration     time.Duration
-	lastTrigger     *time.Time
-	config          gose4.Configuration
+	maxDuration time.Duration
+	lastTrigger *time.Time
+	config      gose4.Configuration
 }
 
 func New(maxDuration time.Duration, config gose4.Configuration) *Check {

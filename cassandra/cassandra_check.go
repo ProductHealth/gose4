@@ -7,11 +7,11 @@ import (
 )
 
 type check struct {
-	session                  *gocql.Session
-	config gose4.Configuration
+	session *gocql.Session
+	config  gose4.Configuration
 }
 
-func New(session *gocql.Session, config gose4.Configuration) *check{
+func New(session *gocql.Session, config gose4.Configuration) *check {
 	return &check{session: session, config: config}
 }
 

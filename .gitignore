@@ -28,3 +28,6 @@ target
 *.out
 
 gose4checkversion/gose4checkversion
+gose4gen/gose4gen
+gose4gen/gose4_initialization.go
+gose4gen/status.json

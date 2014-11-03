@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/ProductHealth/gose4"
@@ -11,7 +12,6 @@ import (
 	"strings"
 	"text/template"
 	"time"
-	"encoding/json"
 )
 
 // Generate a minimum status json file, populating all build related fields
