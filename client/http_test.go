@@ -1,12 +1,11 @@
 package client
 
 import (
+	gnet "github.com/ProductHealth/gommons/net"
 	"github.com/ProductHealth/gose4"
 	"github.com/stretchr/testify/assert"
 	"net/http/httptest"
 	"net/url"
-	"strconv"
-	"strings"
 	"testing"
 	"time"
 )
@@ -40,9 +39,7 @@ func TestClientParsesSE4Result(t *testing.T) {
 	server := httptest.NewServer(gose4.HandlerFunc(se4))
 	defer server.Close()
 	u, _ := url.Parse(server.URL)
-	parts := strings.Split(u.Host, ":")
-	port, _ := strconv.Atoi(parts[1])
-	client := NewClient(ClientConfiguration{parts[0], port})
+	client := New(gnet.FromUrl(*u))
 	result, err := client.Healthcheck()
 	assert.NoError(t, err)
 	assert.NotNil(t, result)

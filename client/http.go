@@ -4,28 +4,22 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	gnet "github.com/ProductHealth/gommons/net"
 	"github.com/ProductHealth/gose4"
 	"io/ioutil"
 	"net/http"
 )
 
-type ClientConfiguration struct {
-	Host string
-	Port int
+type httpClient struct {
+	endpoint gnet.Endpoint
 }
 
-type HttpClient struct {
-	config     ClientConfiguration
-	httpClient http.Client
+func New(endpoint gnet.Endpoint) Client {
+	return &httpClient{endpoint}
 }
 
-func NewClient(config ClientConfiguration) Client {
-	client := http.Client{}
-	return &HttpClient{config, client}
-}
-
-func (client *HttpClient) Healthcheck() (*gose4.TestResults, error) {
-	requestUrl := fmt.Sprintf("http://%v:%v/service/healthcheck", client.config.Host, client.config.Port)
+func (client *httpClient) Healthcheck() (*gose4.TestResults, error) {
+	requestUrl := fmt.Sprintf("http://%v:%v/service/healthcheck", client.endpoint.HostName(), client.endpoint.Port())
 	var resp, err = http.Get(requestUrl)
 	switch {
 	case err != nil:
