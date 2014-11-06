@@ -6,7 +6,7 @@ import (
 	"github.com/coreos/go-etcd/etcd"
 	"os"
 	"time"
-	"github.com/ProductHealth/gommons/time"
+	gtime "github.com/ProductHealth/gommons/time"
 )
 
 type check struct {
@@ -19,7 +19,7 @@ func New(client *etcd.Client, config gose4.Configuration) *check {
 }
 
 func (hc check) Run() gose4.HealthCheckResult {
-	sw := time.NewStopWatch()
+	sw := gtime.NewStopWatch()
 	hostname, err := os.Hostname()
 	path := fmt.Sprintf("/%v/%v", hostname, time.Now().Unix())
 	_, err = hc.client.Set(path, "", 1)
