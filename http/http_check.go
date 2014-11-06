@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"github.com/ProductHealth/gommons/time"
 )
 
 type check struct {
@@ -52,7 +53,7 @@ func (hc *check) ExpectedBody(content string) {
 }
 
 func (hc *check) Run() gose4.HealthCheckResult {
-	sw := gose4.CreateStopWatch()
+	sw := time.NewStopWatch()
 	var bodyReader io.Reader = nil
 	if hc.requestBody != nil {
 		bodyReader = strings.NewReader(*(hc.requestBody))
