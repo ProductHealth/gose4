@@ -63,10 +63,12 @@ func (hc *check) Run() gose4.HealthCheckResult {
 		return gose4.Failed(sw.GetDuration(), err.Error())
 	}
 	response, err := hc.requestFunc(request)
-	defer response.Body.Close()
 	glog.V(5).Infof("RESPONSE %#v ERR: %s", response, err)
 	if err != nil {
 		return gose4.Failed(sw.GetDuration(), fmt.Sprintf("Error while requesting %#v: %s", hc.url, err))
+	}
+	if response.Body != nil {
+		defer response.Body.Close()
 	}
 	if hc.statusCode != response.StatusCode {
 		return gose4.Failed(sw.GetDuration(), fmt.Sprintf("Returned response code %#v does not match required %#v ", response.StatusCode, hc.statusCode))
