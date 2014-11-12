@@ -21,6 +21,9 @@ func New(endpoint gnet.Endpoint) Client {
 func (client *httpClient) Healthcheck() (*gose4.TestResults, error) {
 	requestUrl := fmt.Sprintf("http://%v:%v/service/healthcheck", client.endpoint.HostName(), client.endpoint.Port())
 	var resp, err = http.Get(requestUrl)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	switch {
 	case err != nil:
 		return nil, err
