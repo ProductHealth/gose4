@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ProductHealth/gose4"
 	"github.com/gocql/gocql"
+	gtime "github.com/ProductHealth/gommons/time"
 )
 
 type check struct {
@@ -16,7 +17,7 @@ func New(session *gocql.Session, config gose4.Configuration) *check {
 }
 
 func (hc check) Run() gose4.HealthCheckResult {
-	sw := gose4.CreateStopWatch()
+	sw := gtime.NewStopWatch()
 	valid, err := hc.checkConnection()
 	if !valid {
 		return gose4.Failed(sw.GetDuration(), fmt.Sprintf("encountered error while quering cassandra : %v", err))
