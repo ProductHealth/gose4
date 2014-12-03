@@ -4,7 +4,6 @@ import (
 	"fmt"
 	sigar "github.com/cloudfoundry/gosigar"
 	restful "github.com/emicklei/go-restful"
-	"github.com/golang/glog"
 	"net/http"
 	"runtime"
 	"time"
@@ -12,6 +11,11 @@ import (
 
 const (
 	SE4TimeFormat = "2006-01-02T15:04:05Z"
+)
+
+var (
+	//
+	GoodToGoFailureLevel = SeverityWarn
 )
 
 type TestResults struct {
@@ -28,7 +32,7 @@ type TestResult struct {
 
 func StartHttpServer(service HealthCheckService, httpPort int) {
 	container := restful.NewContainer()
-	glog.Infof("Starting SE4 server on port %v", httpPort)
+	Infof("Starting SE4 server on port %v", httpPort)
 	container.Add(createRestServer(service))
 	httpServer := &http.Server{Addr: fmt.Sprintf(":%v", httpPort), Handler: container}
 	httpServer.ListenAndServe()
@@ -70,7 +74,7 @@ func createGetServiceStatus() restful.RouteFunction {
 }
 
 func createGetServiceHealthCheck(healthcheckservice HealthCheckService) restful.RouteFunction {
-	return func(request *restful.Request, response *restful.Response) {
+	return func(_ *restful.Request, response *restful.Response) {
 		result := TestResults{}
 		result.ReportAsOf = timeToIso8601(time.Now().UTC())
 		result.Tests = []TestResult{}
@@ -86,10 +90,34 @@ func createGetServiceHealthCheck(healthcheckservice HealthCheckService) restful.
 	}
 }
 
+func createGoodToGo(healthcheckservice HealthCheckService) restful.RouteFunction {
+	return func(_ *restful.Request, response *restful.Response) {
+		passed := true
+		results := healthcheckservice.GetResults()
+		for check, result := range results {
+			if check.Configuration().Severity >= GoodToGoFailureLevel {
+				if result.Result == CheckFailed {
+					passed = false
+					break
+				}
+			}
+		}
+		if len(results) == 0 {
+			response.WriteErrorString(200, "No tests configured")
+		} else if passed {
+			response.WriteErrorString(200, "All checks passed")
+		} else {
+			response.WriteErrorString(503, fmt.Sprintf("One or more tests with severity %v failed", GoodToGoFailureLevel))
+		}
+	}
+}
+
 func registerRestEndpoints(ws *restful.WebService, se4 HealthCheckService) {
 	ws.Route(ws.GET("/service/status").To(createGetServiceStatus()))
 	ws.Route(ws.GET("/service/healthcheck").To(createGetServiceHealthCheck(se4)))
+	ws.Route(ws.GET("/service/healthcheck/gtg").To(createGoodToGo(se4)))
 }
+
 func createRestServer(service HealthCheckService) *restful.WebService {
 	webService := new(restful.WebService)
 	webService.Consumes(restful.MIME_JSON)
