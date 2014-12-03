@@ -107,7 +107,7 @@ func createGoodToGo(healthcheckservice HealthCheckService) restful.RouteFunction
 		} else if passed {
 			response.WriteErrorString(200, "All checks passed")
 		} else {
-			response.WriteErrorString(500, fmt.Sprintf("One or more tests with severity %v failed", GoodToGoFailureLevel))
+			response.WriteErrorString(503, fmt.Sprintf("One or more tests with severity %v failed", GoodToGoFailureLevel))
 		}
 	}
 }

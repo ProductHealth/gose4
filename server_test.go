@@ -80,7 +80,7 @@ func TestGoodToGoPassesWhenSeverityFatalFails(t *testing.T) {
 
 	handler(w, req)
 
-	if w.Code != 500 {
-		t.Errorf("Expected 500 but go: %d", w.Code)
+	if w.Code != 503 {
+		t.Errorf("Expected 503 but go: %d", w.Code)
 	}
 }
