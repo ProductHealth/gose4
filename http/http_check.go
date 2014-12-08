@@ -62,7 +62,7 @@ func (hc *check) Run() gose4.HealthCheckResult {
 		return gose4.Failed(sw.GetDuration(), err.Error())
 	}
 	response, err := hc.requestFunc(request)
-	gose4.Infof("RESPONSE %#v ERR: %s", response, err)
+	gose4.Debugf("RESPONSE %#v ERR: %s", response, err)
 	if err != nil {
 		return gose4.Failed(sw.GetDuration(), fmt.Sprintf("Error while requesting %#v: %s", hc.url, err))
 	}
